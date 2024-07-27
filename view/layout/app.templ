@@ -1,5 +1,6 @@
 package layout
 
+import "dreampicai/view/ui"
 
 templ App(nav bool) {
 	<!DOCTYPE html>
@@ -16,7 +17,7 @@ templ App(nav bool) {
 		</head>
 		<body class="antialiased">
 			if nav {
-                navigation 
+				@ui.Navigation()
 			}
 			{ children... }
 		</body>

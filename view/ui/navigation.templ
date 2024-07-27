@@ -1,0 +1,29 @@
+package ui
+
+import "dreampicai/view"
+
+templ Navigation() {
+	<div class="navbar bg-base-100 border-b border-gray-700">
+		<div class="flex-1">
+			<a href="/" class="text-2xl font-black text-primary">dreampicui</a>
+		</div>
+		<div class="flex-none">
+			<ul class="menu menu-horizontal px-1">
+				if view.AuthenticatedUser(ctx).LoggedIn {
+					// <li><a href="/generate"><i class="fa-solid fa-wand-magic-sparkles"></i> generate</a></li>
+					<li>
+						<details>
+							<summary>{ view.AuthenticatedUser(ctx).Email }</summary>
+							<ul class="p-2 bg-base-100 rounded-t-none">
+								<li><a>Settings</a></li>
+								<li><a>Logout</a></li>
+							</ul>
+						</details>
+					</li>
+				} else {
+					<a class="btn btn-primary">Login</a>
+				}
+			</ul>
+		</div>
+	</div>
+}
