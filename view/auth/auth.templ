@@ -1,34 +1,132 @@
 package auth
 
-import "dreampicai/view/layout"
+import (
+	"dreampicai/view/layout"
+	"github.com/nedpals/supabase-go"
+)
 
 templ Login() {
 	@layout.App(false) {
 		<div class="flex justify-center mt-[8rem]">
-			<div class="max-w-screen-sm w-full bg-base-300 py-12 px-16 rounded-xl">
+			<div class="max-w-md w-full bg-base-300 py-12 px-8 rounded-xl">
 				<h1 class="text-center text-xl font-black mb-10">Login to dreampicai</h1>
-				<div class="space-y-4">
-					<div class="w-full">
-						<div class="label">
-							<span class="label-text">Email address</span>
-						</div>
-						<input type="email" autocompete="off" required placeholder="Type here" class="input input-bordered w-full"/>
-						<div class="label">
-							<span class="label-text-alt text-error">this is wrong</span>
-						</div>
-					</div>
-					<div class="w-full">
-						<div class="label">
-							<span class="label-text">Password</span>
-						</div>
-						<input type="email" autocompete="off" required placeholder="Type here" class="input input-bordered w-full"/>
-						<div class="label">
-							<span class="label-text-alt text-error">this is wrong</span>
-						</div>
-					</div>
-					<button class="btn btn-primary w-full">login<i class="fa-solid fa-arrow-right"></i></button>
-				</div>
+				@LoginFrom(supabase.UserCredentials{}, LoginError{})
 			</div>
 		</div>
 	}
+}
+
+templ Signup() {
+	@layout.App(false) {
+		<div class="flex justify-center mt-[8rem]">
+			<div class="max-w-md w-full bg-base-300 py-12 px-8 rounded-xl">
+				<h1 class="text-center text-xl font-black mb-10">Signup to dreampicai</h1>
+				@SignupForm(SignupParams{}, SignupErrors{})
+			</div>
+		</div>
+	}
+}
+
+templ SignupSuccess(email string) {
+	<div>
+		A confirmation email has been sent to: <span class="font-semibold text-success">{ email }</span>
+	</div>
+}
+
+type LoginError struct {
+	Email              string
+	Password           string
+	InvaildCredentials string
+}
+
+templ LoginFrom(creds supabase.UserCredentials, errors LoginError) {
+	<form
+		hx-post="/login"
+		hx-swap="outerHTML"
+		class="space-y-4"
+	>
+		<div class="w-full">
+			<div class="label">
+				<span class="label-text">Email address</span>
+			</div>
+			<input type="email" name="email" value={ creds.Email } autocompete="off" required placeholder="Type here" class="input input-bordered w-full"/>
+			if len(errors.Email) > 0 {
+				<div class="label">
+					<span class="label-text-alt text-error">{ errors.Email }</span>
+				</div>
+			}
+		</div>
+		<div class="w-full">
+			<div class="label">
+				<span class="label-text">Password</span>
+			</div>
+			<input type="password" name="password" autocompete="off" required placeholder="Type here" class="input input-bordered w-full"/>
+			if len(errors.Password) > 0 {
+				<div class="label">
+					<span class="label-text-alt text-error">{ errors.Password }</span>
+				</div>
+			}
+		</div>
+		if len(errors.InvaildCredentials) > 0 {
+			<div class="text-sm text-error">
+				{ errors.InvaildCredentials }
+			</div>
+		}
+		<button type="submit" class="btn btn-primary w-full">login<i class="fa-solid fa-arrow-right"></i></button>
+	</form>
+}
+
+type SignupParams struct {
+	Email           string
+	Password        string
+	ConfirmPassword string
+}
+
+type SignupErrors struct {
+	Email           string
+	Password        string
+	ConfirmPassword string
+}
+
+templ SignupForm(params SignupParams, errors SignupErrors) {
+	<form
+		hx-post="/signup"
+		hx-swap="outerHTML"
+		class="space-y-4"
+	>
+		<div class="w-full">
+			<div class="label">
+				<span class="label-text">Email address</span>
+			</div>
+			<input type="email" name="email" value={ params.Email } autocompete="off" required placeholder="Type here" class="input input-bordered w-full"/>
+			if len(errors.Email) > 0 {
+				<div class="label">
+					<span class="label-text-alt text-error">{ errors.Email }</span>
+				</div>
+			}
+		</div>
+		<div class="w-full">
+			<div class="label">
+				<span class="label-text">Password</span>
+			</div>
+			<input type="password" name="password" autocompete="off" required class="input input-bordered w-full"/>
+			if len(errors.Password) > 0 {
+				<div class="label">
+					<span class="label-text-alt text-error">{ errors.Password }</span>
+				</div>
+			}
+		</div>
+		<div class="w-full">
+			<div class="label">
+				<span class="label-text">Confirm password</span>
+			</div>
+			<input type="password" name="confirmPassword" autocompete="off" required class="input input-bordered w-full"/>
+			if len(errors.ConfirmPassword) > 0 {
+				<div class="label">
+					<span class="label-text-alt text-error">{ errors.ConfirmPassword }</span>
+				</div>
+			}
+		</div>
+		<button type="submit" class="btn btn-primary w-full">signup<i class="fa-solid fa-arrow-right"></i></button>
+	</form>
 }
