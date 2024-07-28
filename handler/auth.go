@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"dreampicai/pkg/kit/validate"
 	"dreampicai/pkg/sb"
 	"dreampicai/pkg/util"
@@ -12,7 +13,9 @@ import (
 )
 
 func HandleLoginIndex(w http.ResponseWriter, r *http.Request) error {
-	return render(r, w, auth.Login())
+	ctx := context.WithValue(r.Context(), "to", r.URL.RawQuery)
+	r.WithContext(ctx)
+	return render(r.WithContext(ctx), w, auth.Login())
 }
 
 func HandleSignupIndex(w http.ResponseWriter, r *http.Request) error {
@@ -74,16 +77,46 @@ func HandleLoginCreate(w http.ResponseWriter, r *http.Request) error {
 			InvaildCredentials: "The credentials you have entered are invaild",
 		}))
 	}
+	setAuthCookie(w, resp.AccessToken)
 
+	to := r.URL.Query().Get("to")
+	if len(to) > 0 {
+		hxRedirect(w, r, to)
+	}
+	return hxRedirect(w, r, "/")
+}
+
+func HandleAuthCallback(w http.ResponseWriter, r *http.Request) error {
+	accessToken := r.URL.Query().Get("access_token")
+	if len(accessToken) == 0 {
+		return render(r, w, auth.CallbackScript())
+	}
+	setAuthCookie(w, accessToken)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+	return nil
+}
+
+func HandleLogoutCreate(w http.ResponseWriter, r *http.Request) error {
+	cookie := http.Cookie{
+		Value:    "",
+		Name:     "at",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   true,
+		Path:     "/",
+	}
+	http.SetCookie(w, &cookie)
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	return nil
+}
+
+func setAuthCookie(w http.ResponseWriter, accessToken string) {
 	cookie := &http.Cookie{
-		Value:    resp.AccessToken,
+		Value:    accessToken,
 		Name:     "at",
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
 	}
 	http.SetCookie(w, cookie)
-
-	http.Redirect(w, r, "/", http.StatusSeeOther)
-	return nil
 }

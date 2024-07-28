@@ -12,3 +12,11 @@ func AuthenticatedUser(ctx context.Context) types.AuthenticatedUser {
 	}
 	return user
 }
+
+func GetCtxStringValue(ctx context.Context, key string) string {
+	value, ok := ctx.Value(key).(string)
+	if !ok {
+		return ""
+	}
+	return value
+}
