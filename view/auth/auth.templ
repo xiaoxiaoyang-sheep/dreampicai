@@ -74,6 +74,8 @@ templ LoginFrom(creds supabase.UserCredentials, errors LoginError) {
 			</div>
 		}
 		<button type="submit" class="btn btn-primary w-full">login<i class="fa-solid fa-arrow-right"></i></button>
+		<div class="divider">OR</div>
+		<a href="/login/provider/google" type="submit" class="btn btn-outline w-full">login with Google<i class="fa-brands fa-google"></i></a>
 	</form>
 }
 

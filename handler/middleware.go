@@ -5,7 +5,10 @@ import (
 	"dreampicai/pkg/sb"
 	"dreampicai/types"
 	"net/http"
+	"os"
 	"strings"
+
+	"github.com/gorilla/sessions"
 )
 
 func WithUser(next http.Handler) http.Handler {
@@ -14,12 +17,15 @@ func WithUser(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		cookie, err := r.Cookie("at")
+
+		store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_SECRET")))
+		session, err := store.Get(r, sessionUserKey)
 		if err != nil {
 			next.ServeHTTP(w, r)
 			return
 		}
-		resp, err := sb.Client.Auth.User(r.Context(), cookie.Value)
+		accessToken := session.Values[sessionAccessTokenKey].(string)
+		resp, err := sb.Client.Auth.User(r.Context(), accessToken)
 		if err != nil {
 			next.ServeHTTP(w, r)
 			return

@@ -8,8 +8,15 @@ import (
 	"dreampicai/view/auth"
 	"log/slog"
 	"net/http"
+	"os"
 
+	"github.com/gorilla/sessions"
 	"github.com/nedpals/supabase-go"
+)
+
+const (
+	sessionUserKey        = "user"
+	sessionAccessTokenKey = "accessToken"
 )
 
 func HandleLoginIndex(w http.ResponseWriter, r *http.Request) error {
@@ -51,6 +58,18 @@ func HandleSignupCreate(w http.ResponseWriter, r *http.Request) error {
 	return render(r, w, auth.SignupSuccess(user.Email))
 }
 
+func HandleLoginWithGoogle(w http.ResponseWriter, r *http.Request) error {
+	resp, err := sb.Client.Auth.SignInWithProvider(supabase.ProviderSignInOptions{
+		Provider:   "google",
+		RedirectTo: "http://localhost:3000/auth/callback",
+	})
+	if err != nil {
+		return err
+	}
+	hxRedirect(w, r, resp.URL)
+	return nil
+}
+
 func HandleLoginCreate(w http.ResponseWriter, r *http.Request) error {
 	credentials := supabase.UserCredentials{
 		Email:    r.FormValue("email"),
@@ -77,7 +96,10 @@ func HandleLoginCreate(w http.ResponseWriter, r *http.Request) error {
 			InvaildCredentials: "The credentials you have entered are invaild",
 		}))
 	}
-	setAuthCookie(w, resp.AccessToken)
+
+	if err := setAuthSession(r, w, resp.AccessToken); err != nil {
+		return err
+	}
 
 	to := r.URL.Query().Get("to")
 	if len(to) > 0 {
@@ -91,32 +113,25 @@ func HandleAuthCallback(w http.ResponseWriter, r *http.Request) error {
 	if len(accessToken) == 0 {
 		return render(r, w, auth.CallbackScript())
 	}
-	setAuthCookie(w, accessToken)
+	if err := setAuthSession(r, w, accessToken); err != nil {
+		return nil
+	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 	return nil
 }
 
 func HandleLogoutCreate(w http.ResponseWriter, r *http.Request) error {
-	cookie := http.Cookie{
-		Value:    "",
-		Name:     "at",
-		MaxAge:   -1,
-		HttpOnly: true,
-		Secure:   true,
-		Path:     "/",
-	}
-	http.SetCookie(w, &cookie)
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_SECRET")))
+	session, _ := store.Get(r, sessionUserKey)
+	session.Values[sessionAccessTokenKey] = ""
+	session.Save(r, w)
+	hxRedirect(w, r, "/login")
 	return nil
 }
 
-func setAuthCookie(w http.ResponseWriter, accessToken string) {
-	cookie := &http.Cookie{
-		Value:    accessToken,
-		Name:     "at",
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
-	}
-	http.SetCookie(w, cookie)
+func setAuthSession(r *http.Request, w http.ResponseWriter, accessToken string) error {
+	store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_SECRET")))
+	session, _ := store.Get(r, sessionUserKey)
+	session.Values[sessionAccessTokenKey] = accessToken
+	return session.Save(r, w)
 }
