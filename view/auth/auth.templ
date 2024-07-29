@@ -6,6 +6,43 @@ import (
 	"github.com/nedpals/supabase-go"
 )
 
+templ AccountSetup() {
+	@layout.App(true) {
+		<div class="max-w-xl bg-base-300 px-6 py-12 w-full mx-auto mt-4 rounded-xl">
+			<h1 class="text-xl font-black mb-8 text-center">Setup your account</h1>
+			@AccountSetupFrom(AccountSetupParams{}, AccountSetupErrors{})
+		</div>
+	}
+}
+
+type AccountSetupParams struct {
+	Username string
+}
+
+type AccountSetupErrors struct {
+	Username string
+}
+
+templ AccountSetupFrom(params AccountSetupParams, errors AccountSetupErrors) {
+	<form
+		hx-post="/account/setup"
+		hx-swap="outerHTMLhh"
+	>
+		<label class="input input-bordered flex items-center gap-2 mb-4">
+			<div class="label">
+				<span class="label-text-alt">Enter your username</span>
+			</div>
+			<input type="text" name="username" class="grow"/>
+			<div class="label">
+				if len(errors.Username) > 0 {
+					<span class="label-text-alt text-error">{ errors.Username }</span>
+				}
+			</div>
+		</label>
+		<button class="btn btn-primary">submit</button>
+	</form>
+}
+
 templ Login() {
 	@layout.App(false) {
 		<div class="flex justify-center mt-[8rem]">

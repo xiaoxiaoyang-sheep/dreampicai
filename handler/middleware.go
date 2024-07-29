@@ -40,8 +40,23 @@ func WithUser(next http.Handler) http.Handler {
 			Email:    resp.Email,
 			LoggedIn: true,
 		}
+		ctx := context.WithValue(r.Context(), types.UserContextKey, user)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	}
+	return http.HandlerFunc(fn)
+}
+
+func WithAccountSetup(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		user := getAuthenticatedUser(r)
 		account, err := db.GetAccountByUserID(user.ID)
-		if !errors.Is(err, sql.ErrNoRows) {
+		// The user has not setup his account yet.
+		// Hence, redirect him to /account/setup
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				hxRedirect(w, r, "/account/setup")
+				return
+			}
 			next.ServeHTTP(w, r)
 			return
 		}
