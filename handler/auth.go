@@ -31,7 +31,7 @@ func HandleAccountSetupCreate(w http.ResponseWriter, r *http.Request) error {
 	}
 	var errors auth.AccountSetupErrors
 	ok := validate.New(&params, validate.Fields{
-		"Username": validate.Rules(validate.Max(50)),
+		"Username": validate.Rules(validate.Min(3), validate.Max(50)),
 	}).Validate(&errors)
 	if !ok {
 		return render(r, w, auth.AccountSetupFrom(params, errors))

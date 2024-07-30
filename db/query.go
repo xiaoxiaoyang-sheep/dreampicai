@@ -7,6 +7,14 @@ import (
 	"github.com/google/uuid"
 )
 
+func UpdateAccount(account *types.Account) error {
+	_, err := Bun.NewUpdate().
+		Model(account).
+		WherePK().
+		Exec(context.Background())
+	return err
+}
+
 func GetAccountByUserID(userID uuid.UUID) (types.Account, error) {
 	var account types.Account
 	err := Bun.NewSelect().
