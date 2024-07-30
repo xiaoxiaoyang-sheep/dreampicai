@@ -171,6 +171,55 @@ templ SignupForm(params SignupParams, errors SignupErrors) {
 	</form>
 }
 
+templ ResetPassword() {
+	@layout.App(true) {
+		<div class="max-w-2xl w-full mx-auto mt-8">
+			<div>
+				<h1 class="text-lg font-semibold border-b border-gray-700 pb-2">Reset password</h1>
+				<div class="py-6">
+					<div class="text-label mb-2">Enter new password</div>
+					@ResetPasswordForm(ResetPasswordErrors{})
+				</div>
+			</div>
+		</div>
+	}
+}
+
+type ResetPasswordParams struct {
+	NewPassword string
+}
+
+type ResetPasswordErrors struct {
+	NewPassword string
+}
+
+templ ResetPasswordInitiated(email string) {
+	<div>
+		A password reset link is being sent to <span class="text-info font-semibold">{ email }</span>
+	</div>
+}
+
+templ ResetPasswordForm(errors ResetPasswordErrors) {
+	<form
+		hx-put="/auth/reset-password"
+		hx-swap="outerHTML"
+	>
+		<div class="mb-4">
+			<input
+				class="input input-bordered w-full max-w-sm"
+				name="password"
+				type="password"
+			/>
+			if len(errors.NewPassword) > 0 {
+				<div class="text-sm text-error mt-1">
+					{ errors.NewPassword }
+				</div>
+			}
+		</div>
+		<button class="btn btn-primary">update password</button>
+	</form>
+}
+
 templ CallbackScript() {
 	<script>
 		var url = window.location.href;

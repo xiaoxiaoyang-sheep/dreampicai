@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"dreampicai/db"
 	"dreampicai/pkg/kit/validate"
@@ -8,6 +9,9 @@ import (
 	"dreampicai/pkg/util"
 	"dreampicai/types"
 	"dreampicai/view/auth"
+	"encoding/json"
+	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -20,6 +24,53 @@ const (
 	sessionUserKey        = "user"
 	sessionAccessTokenKey = "accessToken"
 )
+
+func HandleResetPasswordIndex(w http.ResponseWriter, r *http.Request) error {
+	return render(r, w, auth.ResetPassword())
+}
+
+func HandleResetPasswordCreate(w http.ResponseWriter, r *http.Request) error {
+	user := getAuthenticatedUser(r)
+	params := map[string]any{
+		"email":       user.Email,
+		"redirectUrl": "http://localhost:3000/auth/reset-password",
+	}
+	b, err := json.Marshal(params)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s", sb.BaseAuthURl), bytes.NewReader(b))
+	req.Header.Set("apikey", os.Getenv("SUPABASE_SECRET"))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		b, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("supabase password recovery reponsed  with a non 200 status code: %d => %s", resp.StatusCode, string(b))
+	}
+
+	return render(r, w, auth.ResetPasswordInitiated(user.Email))
+}
+
+func HandleResetPasswordUpdate(w http.ResponseWriter, r *http.Request) error {
+	user := getAuthenticatedUser(r)
+	params := map[string]any{
+		"password": r.FormValue("password"),
+	}
+	_, err := sb.Client.Auth.UpdateUser(r.Context(), user.AccessToken, params)
+	errors := auth.ResetPasswordErrors{
+		NewPassword: "please enter a valid password",
+	}
+	if err != nil {
+		return render(r, w, auth.ResetPasswordForm(errors))
+	}
+	return hxRedirect(w, r, "/")
+}
 
 func HandleAccountSetupIndex(w http.ResponseWriter, r *http.Request) error {
 	return render(r, w, auth.AccountSetup())

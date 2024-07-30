@@ -10,7 +10,7 @@ templ Navigation() {
 		<div class="flex-none">
 			<ul class="menu menu-horizontal px-1">
 				if view.AuthenticatedUser(ctx).LoggedIn {
-					// <li><a href="/generate"><i class="fa-solid fa-wand-magic-sparkles"></i> generate</a></li>
+					<li><a href="/generate"><i class="fa-solid fa-wand-magic-sparkles"></i> generate</a></li>
 					<li>
 						<details>
 							<summary>{ view.AuthenticatedUser(ctx).Email }</summary>
