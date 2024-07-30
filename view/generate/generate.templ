@@ -26,7 +26,7 @@ templ Index(data ViewData) {
 templ Form() {
 	<form
 		hx-post="/generate"
-		hx-swap="beforeend"
+		hx-swap="afterbegin"
 		hx-target="#gallery"
 	>
 		<div>
@@ -45,16 +45,18 @@ templ Gallery(images []types.Image) {
 
 templ GalleryImage(image types.Image) {
 	if image.Status == types.ImageStatusCompleted {
-		<div class="bg-green-100 aspect-[3/4] rounded-xl"></div>
+		<div class="bg-green-100 aspect-[2/3] rounded-xl cursor-pointer">
+			<img class="object-cover aspect-[2/3] rounded-xl" src={ image.ImageLocation }/>
+		</div>
 	} else if image.Status == types.ImageStatusFailed {
-		<div class="bg-red-100 aspect-[3/4] rounded-xl flex justify-center items-center">
+		<div class="bg-red-100 aspect-[2/3] rounded-xl flex justify-center items-center">
 			<div>
 				<i class="fa-solid fa-bug text-5xl font-black text-slate-600"></i>
 			</div>
 		</div>
 	} else if image.Status == types.ImageStatusPending {
 		<div
-			class="bg-red-100 aspect-[3/4] rounded-xl flex justify-center items-center"
+			class="bg-red-100 aspect-[2/3] rounded-xl flex justify-center items-center"
 			hx-get={ fmt.Sprintf("/generate/image/status/%d", image.ID) }
 			hx-trigger="load delay:3s"
 		>

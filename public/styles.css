@@ -1961,8 +1961,8 @@ html {
   display: grid;
 }
 
-.aspect-\[3\/4\] {
-  aspect-ratio: 3/4;
+.aspect-\[2\/3\] {
+  aspect-ratio: 2/3;
 }
 
 .h-\[calc\(100vh-69px\)\] {
@@ -2007,6 +2007,10 @@ html {
 
 .flex-none {
   flex: none;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 
 .grid-cols-4 {
@@ -2071,6 +2075,11 @@ html {
 .bg-red-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(254 226 226 / var(--tw-bg-opacity));
+}
+
+.object-cover {
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 
 .p-2 {
