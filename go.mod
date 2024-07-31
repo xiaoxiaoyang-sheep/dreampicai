@@ -27,6 +27,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/nedpals/postgrest-go v0.1.3 // indirect
 	github.com/replicate/replicate-go v0.22.0 // indirect
+	github.com/stripe/stripe-go/v79 v79.5.0 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect

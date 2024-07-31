@@ -33,7 +33,7 @@ func HandleResetPasswordCreate(w http.ResponseWriter, r *http.Request) error {
 	user := getAuthenticatedUser(r)
 	params := map[string]any{
 		"email":       user.Email,
-		"redirectUrl": "http://localhost:3000/auth/reset-password",
+		"redirectUrl": "http://localhost:7331/auth/reset-password",
 	}
 	b, err := json.Marshal(params)
 	if err != nil {
@@ -140,7 +140,7 @@ func HandleSignupCreate(w http.ResponseWriter, r *http.Request) error {
 func HandleLoginWithGoogle(w http.ResponseWriter, r *http.Request) error {
 	resp, err := sb.Client.Auth.SignInWithProvider(supabase.ProviderSignInOptions{
 		Provider:   "google",
-		RedirectTo: "http://localhost:3000/auth/callback",
+		RedirectTo: "http://localhost:7331/auth/callback",
 	})
 	if err != nil {
 		return err

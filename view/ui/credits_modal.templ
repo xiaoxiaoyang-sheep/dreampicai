@@ -9,8 +9,9 @@ templ CreditsModal(creditsNeeded, userCredits int) {
 			<p class="py-4">Buy more credits to keep using this feature</p>
 			<p class="py-4">You have { view.String(userCredits) }, but need { view.String(creditsNeeded) }</p>
 			<div class="modal-action">
-				<form method="dialog">
-					<button class="btn">Close</button>
+				<form method="dialog ">
+					<button class="btn mr-2">Close</button>
+					<a href="/buy-credits" class="btn bg-gradient-to-r from-purple-400 via-purple-500 to-purple-800">Buy credits</a>
 				</form>
 			</div>
 		</div>
