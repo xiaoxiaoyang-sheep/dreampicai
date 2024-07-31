@@ -7,14 +7,19 @@ import (
 	"dreampicai/pkg/kit/validate"
 	"dreampicai/types"
 	"dreampicai/view/generate"
+	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/replicate/replicate-go"
 	"github.com/uptrace/bun"
 )
+
+const creditsPerImage = 2
 
 func HandleGenerateIndex(w http.ResponseWriter, r *http.Request) error {
 	user := getAuthenticatedUser(r)
@@ -48,8 +53,25 @@ func HandleGenerateCreate(w http.ResponseWriter, r *http.Request) error {
 		return render(r, w, generate.Form(params, errors))
 	}
 
+	creditsNeeded := params.Amount * creditsPerImage
+	if user.Account.Credits < creditsNeeded {
+		errors.CreditsNeeded = creditsNeeded
+		errors.UserCredits = user.Account.Credits
+		errors.Credits = true
+		return render(r, w, generate.Form(params, errors))
+	}
+
+	batchID := uuid.New()
+	genParams := GenerateImageParams{
+		Amount:  params.Amount,
+		UserID:  user.ID,
+		BatchID: batchID,
+	}
+	if err := generateImages(r.Context(), genParams); err != nil {
+		return err
+	}
+
 	err := db.Bun.RunInTx(r.Context(), &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
-		batchID := uuid.New()
 		for i := 0; i < params.Amount; i++ {
 			img := types.Image{
 				Prompt:  params.Prompt,
@@ -81,4 +103,33 @@ func HandleGenerateImageStatus(w http.ResponseWriter, r *http.Request) error {
 
 	slog.Info("checking image status", "id", id)
 	return render(r, w, generate.GalleryImage(image))
+}
+
+type GenerateImageParams struct {
+	Prompt  string
+	Amount  int
+	BatchID uuid.UUID
+	UserID  uuid.UUID
+}
+
+func generateImages(ctx context.Context, params GenerateImageParams) error {
+	r8, err := replicate.NewClient(replicate.WithTokenFromEnv())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// model := "fofr/sticker-maker"
+	version := "4acb778eb059772225ec213948f0660867b2e03f277448f18cf1800b96a65a1a"
+
+	input := replicate.PredictionInput{
+		"prompt": params.Prompt,
+	}
+
+	webhook := replicate.Webhook{
+		URL:    fmt.Sprintf("https://webhook.site/c214eb53-4909-4cd0-ab2e-5ffad90cdbce/%s/%s", params.UserID, params.BatchID),
+		Events: []replicate.WebhookEventType{"start", "completed"},
+	}
+	// Run a model and wait for its output
+	_, err = r8.CreatePrediction(ctx, version, input, &webhook, false)
+	return err
 }

@@ -1,0 +1,21 @@
+package ui
+
+import "dreampicai/view"
+
+templ CreditsModal(creditsNeeded, userCredits int) {
+	<dialog id="credits_modal" class="modal modal-bottom sm:modal-middle ">
+		<div class="modal-box">
+			<h3 class="text-lg font-bold">Buy credits</h3>
+			<p class="py-4">Buy more credits to keep using this feature</p>
+			<p class="py-4">You have { view.String(userCredits) }, but need { view.String(creditsNeeded) }</p>
+			<div class="modal-action">
+				<form method="dialog">
+					<button class="btn">Close</button>
+				</form>
+			</div>
+		</div>
+	</dialog>
+	<script>
+        document.getElementById("credits_modal").showModal(); 
+    </script>
+}
