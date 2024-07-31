@@ -5,6 +5,7 @@ create table if not exists images(
     prompt text not null,
     deleted boolean not null default 'false',
     image_location text,
+    batch_id uuid not null,
     deleted_at timestamp ,
     created_at timestamp not null default now()
 )

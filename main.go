@@ -25,7 +25,7 @@ func main() {
 	router := chi.NewMux()
 	router.Use(handler.WithUser)
 
-	router.Handle("/*", http.StripPrefix("/", http.FileServer(http.FS(FS))))
+	router.Handle("/*", public())
 	router.Get("/", handler.Make(handler.HandlerHomeIndex))
 	router.Get("/login", handler.Make(handler.HandleLoginIndex))
 	router.Get("/signup", handler.Make(handler.HandleSignupIndex))

@@ -28,8 +28,12 @@ func WithUser(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		accessToken := session.Values[sessionAccessTokenKey].(string)
-		resp, err := sb.Client.Auth.User(r.Context(), accessToken)
+		accessToken := session.Values[sessionAccessTokenKey]
+		if accessToken == nil {
+			next.ServeHTTP(w, r)
+			return
+		}
+		resp, err := sb.Client.Auth.User(r.Context(), accessToken.(string))
 		if err != nil {
 			next.ServeHTTP(w, r)
 			return
@@ -39,7 +43,7 @@ func WithUser(next http.Handler) http.Handler {
 			ID:          uuid.MustParse(resp.ID),
 			Email:       resp.Email,
 			LoggedIn:    true,
-			AccessToken: accessToken,
+			AccessToken: accessToken.(string),
 		}
 		ctx := context.WithValue(r.Context(), types.UserContextKey, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
